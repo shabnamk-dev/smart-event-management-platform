@@ -1,0 +1,15 @@
+{
+  "name": "smart-event-management-platform",
+  "version": "1.0.0",
+  "description": "Smart Event Management Platform - PromptWars x AbhiyantriX Hackathon",
+  "private": true,
+  "scripts": {
+    "server": "npm.cmd --prefix server start",
+    "server:dev": "npm.cmd --prefix server run dev",
+    "client": "npm.cmd --prefix client run dev",
+    "client:build": "npm.cmd --prefix client run build",
+    "test": "npm.cmd --prefix server test",
+    "build": "npm.cmd --prefix client run build",
+    "seed": "npm.cmd --prefix server run seed"
+  }
+}
