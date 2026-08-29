@@ -133,14 +133,18 @@ export function joinTeam(req, res, next) {
       throw new NotFoundError('Invalid invite code. Team not found.');
     }
 
-    // Check team capacity (max 4 members)
-    const countRow = db.prepare('SELECT COUNT(*) as count FROM team_members WHERE team_id = ?').get(team.id);
-    if (countRow.count >= 4) {
-      throw new ConflictError('This team is already at maximum capacity (4 members).');
-    }
+    // Atomic transaction for capacity verification and member addition
+    const joinTx = db.transaction(() => {
+      const countRow = db.prepare('SELECT COUNT(*) as count FROM team_members WHERE team_id = ?').get(team.id);
+      if (countRow.count >= 4) {
+        throw new ConflictError('This team is already at maximum capacity (4 members).');
+      }
 
-    const memberId = `tm_${crypto.randomUUID()}`;
-    db.prepare('INSERT INTO team_members (id, team_id, user_id) VALUES (?, ?, ?)').run(memberId, team.id, req.userId);
+      const memberId = `tm_${crypto.randomUUID()}`;
+      db.prepare('INSERT INTO team_members (id, team_id, user_id) VALUES (?, ?, ?)').run(memberId, team.id, req.userId);
+    });
+
+    joinTx();
 
     res.status(200).json({
       success: true,

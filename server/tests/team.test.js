@@ -154,6 +154,27 @@ describe('Smart Team Matching & Team Management API Tests', () => {
       expect(res.status).toBe(409);
       expect(res.body.success).toBe(false);
     });
+
+    it('should reject joining when team is already at maximum capacity (4 members)', async () => {
+      const db = getDatabase();
+      // Add two more members to NeuralVision AI (already has Priya & Marcus) to reach 4 members
+      db.prepare('INSERT INTO team_members (id, team_id, user_id) VALUES (?, ?, ?)').run('tm_extra_1', 'team_neuralvision_01', 'usr_david_04');
+      db.prepare(`
+        INSERT INTO users (id, name, email, password_hash, role, attendance_token_hash)
+        VALUES ('usr_filler_05', 'Filler User', 'filler@test.dev', 'hash', 'participant', 'th_filler')
+      `).run();
+      db.prepare('INSERT INTO team_members (id, team_id, user_id) VALUES (?, ?, ?)').run('tm_extra_2', 'team_neuralvision_01', 'usr_filler_05');
+
+      // Now Alex attempts to join the already full team (5th member attempt)
+      const res = await request(app)
+        .post('/api/teams/join')
+        .set('Authorization', `Bearer ${alexToken}`)
+        .send({ inviteCode: 'NV-9941' });
+
+      expect(res.status).toBe(409);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('maximum capacity');
+    });
   });
 
   describe('POST /api/teams/leave (Leave Team)', () => {
@@ -178,6 +199,27 @@ describe('Smart Team Matching & Team Management API Tests', () => {
 
       expect(myTeamRes.body.inTeam).toBe(true);
       expect(myTeamRes.body.isLead).toBe(true);
+    });
+
+    it('should dissolve the team when the sole member leaves', async () => {
+      // Alex creates a solo team
+      const createRes = await request(app)
+        .post('/api/teams')
+        .set('Authorization', `Bearer ${alexToken}`)
+        .send({ name: 'Solo Team', track: 'AI' });
+      const teamId = createRes.body.team.id;
+
+      // Alex leaves the solo team
+      const leaveRes = await request(app)
+        .post('/api/teams/leave')
+        .set('Authorization', `Bearer ${alexToken}`);
+
+      expect(leaveRes.status).toBe(200);
+
+      // Verify team was dissolved from DB
+      const db = getDatabase();
+      const teamRow = db.prepare('SELECT id FROM teams WHERE id = ?').get(teamId);
+      expect(teamRow).toBeUndefined();
     });
 
     it('should reject leaving when not in any team with 400 Bad Request', async () => {

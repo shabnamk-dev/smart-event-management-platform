@@ -123,16 +123,33 @@ export default function Navbar({ activePage, setActivePage }) {
                 className={`btn ${activePage === 'dashboard' ? 'btn-primary' : 'btn-secondary'}`}
                 style={{ padding: '0.45rem 0.85rem', fontSize: '0.8125rem' }}
               >
-                <QrCode size={15} /> My Pass & Profile
+                <QrCode size={15} /> Pass & Profile
               </button>
               <button
                 onClick={() => setActivePage('teams')}
                 className={`btn ${activePage === 'teams' ? 'btn-primary' : 'btn-secondary'}`}
                 style={{ padding: '0.45rem 0.85rem', fontSize: '0.8125rem' }}
               >
-                <Users size={15} /> Team Discovery
+                <Users size={15} /> Teams & Matcher
+              </button>
+              <button
+                onClick={() => setActivePage('submissions')}
+                className={`btn ${activePage === 'submissions' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ padding: '0.45rem 0.85rem', fontSize: '0.8125rem' }}
+              >
+                <Sparkles size={15} color="var(--brand-primary)" /> Project Submission
               </button>
             </>
+          )}
+
+          {user && user.role === 'organizer' && (
+            <button
+              onClick={() => setActivePage('organizer')}
+              className={`btn ${activePage === 'organizer' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.8125rem' }}
+            >
+              <Shield size={15} color="var(--status-urgent)" /> Organizer Operations
+            </button>
           )}
 
           {user && (

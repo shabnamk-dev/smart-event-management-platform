@@ -6,6 +6,8 @@ import { NotFoundError } from './utils/errors.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import teamRoutes from './routes/team.routes.js';
+import organizerRoutes from './routes/organizer.routes.js';
+import submissionRoutes from './routes/submission.routes.js';
 import testRbacRoutes from './routes/testRbac.routes.js';
 
 export function createApp() {
@@ -33,6 +35,8 @@ export function createApp() {
   app.use('/api/auth', authRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/teams', teamRoutes);
+  app.use('/api/organizer', organizerRoutes);
+  app.use('/api/submissions', submissionRoutes);
   app.use('/api/test-rbac', testRbacRoutes);
 
   // 404 handler for undefined routes
