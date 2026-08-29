@@ -86,6 +86,7 @@ export async function getQR(req, res, next) {
     res.status(200).json({
       success: true,
       qrDataUrl,
+      rawToken,
       attendee: {
         name: user.name,
         email: user.email,

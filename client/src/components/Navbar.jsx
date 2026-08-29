@@ -142,6 +142,16 @@ export default function Navbar({ activePage, setActivePage }) {
             </>
           )}
 
+          {user && user.role === 'judge' && (
+            <button
+              onClick={() => setActivePage('judging')}
+              className={`btn ${activePage === 'judging' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.8125rem' }}
+            >
+              <Award size={15} color="var(--status-warning)" /> Judging Portal
+            </button>
+          )}
+
           {user && user.role === 'organizer' && (
             <button
               onClick={() => setActivePage('organizer')}
@@ -149,6 +159,16 @@ export default function Navbar({ activePage, setActivePage }) {
               style={{ padding: '0.45rem 0.85rem', fontSize: '0.8125rem' }}
             >
               <Shield size={15} color="var(--status-urgent)" /> Organizer Operations
+            </button>
+          )}
+
+          {user && (
+            <button
+              onClick={() => setActivePage('leaderboard')}
+              className={`btn ${activePage === 'leaderboard' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.8125rem' }}
+            >
+              <Sparkles size={15} color="#f59e0b" /> Leaderboard
             </button>
           )}
 

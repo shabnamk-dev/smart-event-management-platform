@@ -120,6 +120,17 @@ describe('User Profile & QR Attendance Pass API Tests', () => {
       expect(res.body.attendee.name).toBe('Alex Chen');
       expect(res.body.attendee.role).toBe('participant');
 
+      expect(res.body.rawToken).toBeDefined();
+      expect(typeof res.body.rawToken).toBe('string');
+      expect(res.body.rawToken.length).toBeGreaterThanOrEqual(16);
+
+      // Verify that hashing rawToken matches the user's attendance_token_hash in DB
+      const db = getDatabase();
+      const userInDb = db.prepare('SELECT attendance_token_hash FROM users WHERE name = ?').get('Alex Chen');
+      const crypto = await import('crypto');
+      const computedHash = crypto.default.createHash('sha256').update(res.body.rawToken).digest('hex');
+      expect(computedHash).toBe(userInDb.attendance_token_hash);
+
       // Security check: no token hash exposure
       expect(res.body.attendance_token_hash).toBeUndefined();
       expect(res.body.attendee.attendance_token_hash).toBeUndefined();

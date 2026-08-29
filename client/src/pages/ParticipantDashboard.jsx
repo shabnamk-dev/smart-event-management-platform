@@ -15,6 +15,7 @@ import {
   X,
   ArrowRight,
   ShieldCheck,
+  Check,
 } from 'lucide-react';
 
 export default function ParticipantDashboard({ setActivePage }) {
@@ -25,6 +26,7 @@ export default function ParticipantDashboard({ setActivePage }) {
   const [teamData, setTeamData] = useState(null);
   const [isLoadingQr, setIsLoadingQr] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [copiedToken, setCopiedToken] = useState(false);
 
   // Edit Profile Form State
   const [editName, setEditName] = useState(user?.name || '');
@@ -114,6 +116,61 @@ export default function ParticipantDashboard({ setActivePage }) {
     a.click();
     document.body.removeChild(a);
     success('QR Attendee Pass downloaded!');
+  };
+
+  const handleCopyToken = () => {
+    const rawToken = qrData?.rawToken;
+    if (!rawToken) {
+      error('Attendance token is still loading. Please try again.');
+      return;
+    }
+
+    let copySucceeded = false;
+
+    // 1. Primary: Synchronous textarea execCommand (works reliably even when document focus is restricted)
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = rawToken;
+      textArea.setAttribute('readonly', '');
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '-9999px';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      textArea.setSelectionRange(0, rawToken.length);
+
+      copySucceeded = document.execCommand('copy');
+      document.body.removeChild(textArea);
+    } catch (err) {
+      console.warn('execCommand copy failed, attempting clipboard API:', err);
+    }
+
+    // If synchronous copy succeeded, display feedback
+    if (copySucceeded) {
+      setCopiedToken(true);
+      success('Attendance Token copied! (Ready to paste in Organizer Terminal)');
+      setTimeout(() => setCopiedToken(false), 2000);
+      return;
+    }
+
+    // 2. Secondary fallback: navigator.clipboard.writeText
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(rawToken)
+        .then(() => {
+          setCopiedToken(true);
+          success('Attendance Token copied! (Ready to paste in Organizer Terminal)');
+          setTimeout(() => setCopiedToken(false), 2000);
+        })
+        .catch((err) => {
+          console.error('All clipboard copy attempts failed:', err);
+          error('Could not auto-copy token. Please copy manually.');
+        });
+    } else {
+      error('Could not auto-copy token. Please copy manually.');
+    }
   };
 
   const addSkill = (e) => {
@@ -242,9 +299,27 @@ export default function ParticipantDashboard({ setActivePage }) {
             )}
           </div>
 
-          <button onClick={handleDownloadQR} className="btn btn-secondary" style={{ width: '100%', fontSize: '0.8125rem' }}>
-            <Download size={14} /> Download Pass Image
-          </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+            <button onClick={handleDownloadQR} className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.45rem 0.5rem' }}>
+              <Download size={13} /> Download Pass
+            </button>
+            <button
+              onClick={handleCopyToken}
+              className="btn btn-secondary"
+              style={{ fontSize: '0.75rem', padding: '0.45rem 0.5rem' }}
+              title="Copy attendance token to test organizer verification"
+            >
+              {copiedToken ? (
+                <>
+                  <Check size={13} color="var(--status-success)" /> Copied!
+                </>
+              ) : (
+                <>
+                  <Sparkles size={13} color="var(--brand-cyan)" /> Copy Token
+                </>
+              )}
+            </button>
+          </div>
         </section>
 
         {/* 2. PROFILE & TEAM SUMMARY */}

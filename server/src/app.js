@@ -8,6 +8,8 @@ import userRoutes from './routes/user.routes.js';
 import teamRoutes from './routes/team.routes.js';
 import organizerRoutes from './routes/organizer.routes.js';
 import submissionRoutes from './routes/submission.routes.js';
+import judgeRoutes from './routes/judge.routes.js';
+import leaderboardRoutes from './routes/leaderboard.routes.js';
 import testRbacRoutes from './routes/testRbac.routes.js';
 
 export function createApp() {
@@ -37,6 +39,8 @@ export function createApp() {
   app.use('/api/teams', teamRoutes);
   app.use('/api/organizer', organizerRoutes);
   app.use('/api/submissions', submissionRoutes);
+  app.use('/api/judge', judgeRoutes);
+  app.use('/api/leaderboard', leaderboardRoutes);
   app.use('/api/test-rbac', testRbacRoutes);
 
   // 404 handler for undefined routes
